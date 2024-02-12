@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2 class="rent-game-heading">Rent {{ game.title }}</h2>
+    <form method="post" action="" id="rentForm" class="rent-game-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <h3 class="rent-game-address-details">Address Details:</h3>
+        <p class="rent-game-address-details">Street: <span id="streetSpan">{{ form.instance.address.street }}</span></p>
+        <p class="rent-game-address-details">City: <span id="citySpan">{{ form.instance.address.city }}</span></p>
+        <p class="rent-game-address-details">State: <span id="stateSpan">{{ form.instance.address.state }}</span></p>
+        <p class="rent-game-address-details">ZIP Code: <span id="zipCodeSpan">{{ form.instance.address.zip_code }}</span></p>
+        <p class="rent-game-address-details">Don't have an address? <a href="{% url 'create_address' %}" class="rent-game-address-link">Create a new address</a></p>
+
+        <button type="submit" class="rent-game-submit-btn">Rent Now</button>
+    </form>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function handleFormChange() {
+                console.log('Form changed');
+                updateAddressDetails();
+            }
+
+            function updateAddressDetails() {
+                var addressId = document.getElementById("id_address").value;
+
+                //AJAX request to get the address details
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', '{% url "get_address_details" 0 %}'.replace('0', addressId), true);
+
+                xhr.onload = function () {
+                    if (xhr.status == 200) {
+                        var addressDetails = JSON.parse(xhr.responseText);
+
+                        // Update the form fields with the received address details
+                        document.getElementById("streetSpan").textContent = addressDetails.street;
+                        document.getElementById("citySpan").textContent = addressDetails.city;
+                        document.getElementById("stateSpan").textContent = addressDetails.state;
+                        document.getElementById("zipCodeSpan").textContent = addressDetails.zip_code;
+                    }
+                };
+
+                xhr.send();
+            }
+            var rentForm = document.getElementById("id_address");
+            if (rentForm) {
+                rentForm.addEventListener("change", handleFormChange);
+            }
+        });
+    </script>
+{% endblock %}
